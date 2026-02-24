@@ -1,0 +1,25 @@
+# Root dependencies
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build artifacts
+frontend/dist/
+frontend/dist-ssr/
+
+# Local databases
+backend/prisma/*.db
+backend/prisma/*.db-*
