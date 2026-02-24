@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  EMPLOYEE
+  MANAGER
+  ADMIN
+}
+
+enum TaskStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         UserRole      @default(EMPLOYEE)
+  isActive     Boolean       @default(true)
+  tasks        Task[]
+  workSessions WorkSession[]
+  shiftSessions ShiftSession[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model ShiftSession {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  shiftStart DateTime
+  shiftEnd   DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([shiftEnd])
+  @@index([userId, shiftEnd])
+}
+
+model Task {
+  id               String        @id @default(cuid())
+  title            String
+  description      String
+  expectedDuration Int
+  status           TaskStatus    @default(ASSIGNED)
+  assignedToId     String
+  assignedTo       User          @relation(fields: [assignedToId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  activityId       String?
+  activity         Activity?     @relation(fields: [activityId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  processId        String?
+  process          Process?      @relation(fields: [processId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subProcessId     String?
+  subProcess       SubProcess?   @relation(fields: [subProcessId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  jobTypeId        String?
+  jobType          JobType?      @relation(fields: [jobTypeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  actualDuration   Int           @default(0)
+  productivity     Float?
+  workSessions     WorkSession[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([assignedToId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([assignedToId, status])
+  @@index([activityId])
+  @@index([processId])
+  @@index([subProcessId])
+  @@index([jobTypeId])
+  @@index([activityId, processId, subProcessId, jobTypeId])
+}
+
+model WorkSession {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int      @default(0)
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([userId])
+  @@index([startTime])
+  @@index([taskId, userId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  tasks     Task[]
+  createdAt DateTime @default(now())
+
+  @@index([name])
+}
+
+model Process {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  subProcesses SubProcess[]
+  tasks       Task[]
+  createdAt   DateTime     @default(now())
+
+  @@index([name])
+}
+
+model SubProcess {
+  id        String   @id @default(cuid())
+  name      String
+  processId String
+  process   Process  @relation(fields: [processId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tasks     Task[]
+  createdAt DateTime @default(now())
+
+  @@unique([processId, name])
+  @@index([processId])
+  @@index([name])
+}
+
+model JobType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  tasks     Task[]
+  createdAt DateTime @default(now())
+
+  @@index([name])
+}

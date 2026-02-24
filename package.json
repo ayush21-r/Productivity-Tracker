@@ -1,0 +1,21 @@
+{
+  "name": "timesheet",
+  "version": "1.0.0",
+  "description": "Productivity Tracker - TimeSheet Application",
+  "type": "module",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js",
+    "backend": "npm --prefix backend run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "backend:seed": "npm --prefix backend run prisma:seed"
+  },
+  "keywords": [
+    "timesheet",
+    "productivity",
+    "tracker"
+  ],
+  "author": "",
+  "license": "MIT"
+}
